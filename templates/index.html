@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvidenceGuard | Digital Evidence Integrity Detector</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #07111f;
+            color: #e8f0f7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: linear-gradient(135deg, #0b1c30, #07111f);
+            border-bottom: 1px solid #18334d;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .logo { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+        .logo span { color: #45d6ff; }
+        .tagline { margin-top: 8px; font-size: 12px; letter-spacing: 2px; color: #8da8bd; }
+        
+        .container {
+            width: 90%;
+            max-width: 850px;
+            margin: 35px auto;
+            flex-grow: 1;
+        }
+
+        /* TAB NAVIGATION */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .tab-btn {
+            background: #0d2137;
+            border: 1px solid #1d425f;
+            color: #9db4c8;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .tab-btn.active {
+            background: #45d6ff;
+            color: #04111c;
+            border-color: #45d6ff;
+        }
+
+        .upload-card {
+            background: linear-gradient(145deg, #0d2137, #091827);
+            border: 1px solid #1d425f;
+            border-radius: 18px;
+            padding: 35px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .upload-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+        .upload-subtitle { color: #9db4c8; font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
+        
+        .dropzone {
+            border: 2px dashed #245277;
+            border-radius: 14px;
+            padding: 35px 20px;
+            background: #081522;
+            cursor: pointer;
+            display: block;
+            transition: border-color 0.3s;
+        }
+        .dropzone:hover { border-color: #45d6ff; }
+        .dropzone input { display: none; }
+        
+        .file-list { margin-top: 15px; text-align: left; font-size: 13px; color: #45d6ff; }
+        
+        .btn {
+            margin-top: 25px;
+            background: #45d6ff;
+            color: #04111c;
+            border: none;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .flash-msg {
+            background: rgba(255, 75, 75, 0.2);
+            border: 1px solid #ff4b4b;
+            color: #ff9999;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+        }
+        footer { text-align: center; color: #60798d; font-size: 11px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">🛡️ Evidence<span>Guard</span></div>
+    <div class="tagline">DIGITAL EVIDENCE INTEGRITY & TAMPERING DETECTOR</div>
+</header>
+
+<div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-msg">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- TAB SWITCHER -->
+    <div class="tabs">
+        <button type="button" class="tab-btn active" onclick="switchTab('pairwise')">
+            ⚖️ Compare Two Images 
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('single')">
+            🔍 Verify Single Image 
+        </button>
+        <button type="button" class="tab-btn" id="tab-part3" onclick="switchTab('part3')">
+    📄 Compare PDFs/Documents
+        </button>
+    </div>
+
+    <!-- PART 1: PAIRWISE COMPARISON -->
+    <div id="pairwise-card" class="upload-card">
+        <h2 class="upload-title">Compare Images for Tampering</h2>
+        <p class="upload-subtitle">Upload the original and suspected image to detect which one has been modified or edited.</p>
+
+        <form action="/analyze" method="POST" enctype="multipart/form-data">
+            <label class="dropzone">
+                <input type="file" name="images" id="imageInputPair" multiple required accept=".png,.jpg,.jpeg,.webp,.bmp">
+                <div style="font-size: 38px; margin-bottom: 10px;">📁</div>
+                <div><strong>Click to select 2 images</strong> or drag and drop here</div>
+                <div style="color: #6a88a0; font-size: 12px; margin-top: 6px;">Select 2 or more files (PNG, JPG, WEBP, BMP)</div>
+            </label>
+
+            <div id="fileListPair" class="file-list"></div>
+
+            <button type="submit" class="btn">Start Comparative Analysis</button>
+        </form>
+    </div>
+
+    <!-- PART 2: SINGLE IMAGE VERIFICATION -->
+    <div id="single-card" class="upload-card" style="display: none;">
+        <h2 class="upload-title">Single Image Verification</h2>
+        <p class="upload-subtitle">Upload a single image to detect compression anomalies, ELA variance, and tampering without needing an original.</p>
+
+        <form action="/verify-single" method="POST" enctype="multipart/form-data">
+            <label class="dropzone">
+                <input type="file" name="single_image" id="imageInputSingle" required accept=".png,.jpg,.jpeg,.webp,.bmp">
+                <div style="font-size: 38px; margin-bottom: 10px;">🔍</div>
+                <div><strong>Click to select 1 image</strong> to inspect</div>
+                <div style="color: #6a88a0; font-size: 12px; margin-top: 6px;">Select 1 file (PNG, JPG, WEBP, BMP)</div>
+            </label>
+
+            <div id="fileListSingle" class="file-list"></div>
+
+            <button type="submit" class="btn">Verify Image Integrity</button>
+        </form>
+    </div>
+</div>
+
+    <!-- PART 3: PDF FORENSIC COMPARE PANEL -->
+<div id="panel-part3" class="tab-panel" style="display: none;">
+    <h2>Compare PDFs for Tampering</h2>
+    <p>Upload the original PDF and suspected PDF to detect exact text edits, added/deleted lines, and visual changes.</p>
+
+    <form action="/compare-pdf" method="POST" enctype="multipart/form-data">
+        <div class="upload-box" style="padding: 24px; text-align: left;">
+            <label for="original_pdf"><strong>1. Original PDF:</strong></label><br>
+            <input type="file" id="original_pdf" name="original_pdf" accept=".pdf" required style="margin-top: 8px; margin-bottom: 18px;"><br>
+
+            <label for="suspect_pdf"><strong>2. Suspected / Modified PDF:</strong></label><br>
+            <input type="file" id="suspect_pdf" name="suspect_pdf" accept=".pdf" required style="margin-top: 8px; margin-bottom: 20px;"><br>
+
+            <button type="submit" class="btn-primary">Compare PDFs</button>
+        </div>
+    </form>
+</div>
+
+<footer>
+    🛡️ EvidenceGuard • Digital Forensics Project
+</footer>
+
+<script>
+    function switchTab(mode) {
+        const pairCard = document.getElementById('pairwise-card');
+        const singleCard = document.getElementById('single-card');
+        const buttons = document.querySelectorAll('.tab-btn');
+
+        if (mode === 'pairwise') {
+            pairCard.style.display = 'block';
+            singleCard.style.display = 'none';
+            buttons[0].classList.add('active');
+            buttons[1].classList.remove('active');
+        } else {
+            pairCard.style.display = 'none';
+            singleCard.style.display = 'block';
+            buttons[0].classList.remove('active');
+            buttons[1].classList.add('active');
+        }
+    }
+
+    // Pairwise File Selector
+    const inputPair = document.getElementById('imageInputPair');
+    const listPair = document.getElementById('fileListPair');
+    inputPair.addEventListener('change', () => {
+        if (inputPair.files.length > 0) {
+            let names = Array.from(inputPair.files).map(f => `• ${f.name} (${(f.size/1024).toFixed(1)} KB)`).join('<br>');
+            listPair.innerHTML = `<strong>Selected ${inputPair.files.length} file(s):</strong><br>${names}`;
+        } else {
+            listPair.innerHTML = '';
+        }
+    });
+
+    // Single File Selector
+    const inputSingle = document.getElementById('imageInputSingle');
+    const listSingle = document.getElementById('fileListSingle');
+    inputSingle.addEventListener('change', () => {
+        if (inputSingle.files.length > 0) {
+            const f = inputSingle.files[0];
+            listSingle.innerHTML = `<strong>Selected file:</strong><br>• ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+        } else {
+            listSingle.innerHTML = '';
+        }
+    });
+</script>
+
+    <div class="card">
+    <h2>Part 3: PDF Document Forensic Compare</h2>
+    <p>Compare an original PDF against a suspect PDF to detect exact text edits, added/deleted lines, metadata changes, and visual alterations.</p>
+    <form action="/compare-pdf" method="POST" enctype="multipart/form-data">
+        <label>Original PDF:</label>
+        <input type="file" name="original_pdf" accept=".pdf" required><br><br>
+        <label>Suspect / Modified PDF:</label>
+        <input type="file" name="suspect_pdf" accept=".pdf" required><br><br>
+        <button type="submit">Compare PDFs</button>
+    </form>
+</div>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const part3Btn = document.getElementById("tab-part3");
+    const part3Panel = document.getElementById("panel-part3");
+
+    if (!part3Btn || !part3Panel) return;
+
+    // Select all tab buttons and upload cards/panels on the page
+    const allTabBtns = document.querySelectorAll(".tab-btn, [role='tab'], .nav-tabs button, .tabs button");
+
+    part3Btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        // Remove active highlight from all tab buttons and highlight Part 3
+        allTabBtns.forEach((btn) => btn.classList.remove("active"));
+        part3Btn.classList.add("active");
+
+        // Hide Part 1 & Part 2 containers (any sibling panels next to panel-part3)
+        const parent = part3Panel.parentElement;
+        Array.from(parent.children).forEach((child) => {
+            if (child.id === "panel-part3") {
+                child.style.display = "block";
+            } else if (
+                child.classList.contains("tab-panel") ||
+                child.classList.contains("tab-content") ||
+                child.classList.contains("card") ||
+                child.querySelector("form")
+            ) {
+                child.style.display = "none";
+            }
+        });
+    });
+
+    // When Part 1 or Part 2 is clicked, hide Part 3 cleanly
+    allTabBtns.forEach((btn) => {
+        if (btn.id !== "tab-part3") {
+            btn.addEventListener("click", function () {
+                part3Panel.style.display = "none";
+                part3Btn.classList.remove("active");
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+EVIDENCEGUARD FORENSIC REPORT
+================================
+
+Images analyzed: 2
+
+Most suspicious image: 1.jpeg
+Suspicion score: 100.0
+
+INTERPRETATION
+--------------
+Some measurable differences were detected, but they are not strong enough to confidently identify intentional manipulation.
+
+IMPORTANT NOTE
+--------------
+This is an automated forensic assessment, not definitive proof of image manipulation. A trusted original, source file, or expert forensic examination provides stronger evidence.

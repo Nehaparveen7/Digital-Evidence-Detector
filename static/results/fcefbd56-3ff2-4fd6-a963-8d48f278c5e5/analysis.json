@@ -1,0 +1,78 @@
+{
+    "analysis_id": "fcefbd56-3ff2-4fd6-a963-8d48f278c5e5",
+    "image_count": 2,
+    "images": [
+        {
+            "index": 0,
+            "number": 1,
+            "filename": "f1.jpeg",
+            "sha256": "d2f95b0ed382258cdcdc89f5942ae7ff63c22dfb0dab5dc44e4abccc6fcb7d4a",
+            "score": 0.0,
+            "status": "Low / Indeterminate",
+            "metadata": {
+                "format": "JPEG",
+                "width": 1068,
+                "height": 1600,
+                "mode": "RGB",
+                "has_exif": false
+            }
+        },
+        {
+            "index": 1,
+            "number": 2,
+            "filename": "o1.jpeg",
+            "sha256": "c69889000ba54914e255dc131d5b658ed9b577c02e1396e12967c886aa4bae09",
+            "score": 0.0,
+            "status": "Low / Indeterminate",
+            "metadata": {
+                "format": "JPEG",
+                "width": 855,
+                "height": 1280,
+                "mode": "RGB",
+                "has_exif": false
+            }
+        }
+    ],
+    "pairwise": [
+        {
+            "image1_index": 0,
+            "image2_index": 1,
+            "ssim": 0.9888630509376526,
+            "pixel_difference": 0.007270001550349645,
+            "edge_difference": 0.008013940907199334,
+            "color_difference": 0.003336036925520659,
+            "hash_distance": 2,
+            "hash_similarity": 0.96875,
+            "changed_percentage": 0.6004993757802747,
+            "region_count": 8,
+            "largest_changed_region": 0.22492717436537663,
+            "difference_score": 0.010542929234317005,
+            "difference_mask": "/static/results/difference_1_vs_2.png",
+            "overlay": "/static/results/overlay_1_vs_2.png"
+        }
+    ],
+    "suspicion_scores": [
+        0.0,
+        0.0
+    ],
+    "most_suspicious_index": 0,
+    "most_suspicious_image": 1,
+    "score_gap": 0.0,
+    "interpretation": {
+        "level": "Low / Indeterminate",
+        "summary": "The submitted images are relatively consistent with one another. No strong statistical outlier was identified.",
+        "details": [
+            "The anomaly scores are relatively close, so the system cannot confidently identify a unique outlier.",
+            "The assessment combines multiple image comparison indicators rather than relying on a single difference measurement.",
+            "A high anomaly score indicates that an image differs from the comparison group; it does not by itself prove intentional tampering."
+        ],
+        "most_suspicious_index": 0,
+        "confidence_gap": 0.0
+    },
+    "summary": {
+        "average_ssim": 0.9888630509376526,
+        "average_difference": 0.010542929234317005,
+        "average_changed_area": 0.6004993757802747
+    },
+    "timestamp": "2026-11-08 22:28:06.481545"
+}

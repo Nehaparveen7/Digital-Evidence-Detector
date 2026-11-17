@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvidenceGuard | Single Image Verification</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #07111f;
+            color: #e8f0f7;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #0b1c30, #07111f);
+            border-bottom: 1px solid #18334d;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #45d6ff;
+        }
+
+        .tagline {
+            margin-top: 8px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #8da8bd;
+        }
+
+        /* CONTAINER */
+        .container {
+            width: 92%;
+            max-width: 1100px;
+            margin: 35px auto;
+        }
+
+        /* VERDICT CARD */
+        .result-card {
+            background: linear-gradient(145deg, #0d2137, #091827);
+            border: 1px solid #1d425f;
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .result-title {
+            font-size: 25px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .result-subtitle {
+            margin-top: 8px;
+            color: #9db4c8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .verdict {
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid;
+        }
+
+        .verdict.tampered {
+            color: #ff8f8f;
+            border-color: #9f3535;
+            background: rgba(150, 30, 30, 0.18);
+        }
+
+        .verdict.suspicious {
+            color: #ffd27a;
+            border-color: #936c25;
+            background: rgba(150, 100, 20, 0.18);
+        }
+
+        .verdict.authentic {
+            color: #7ff0b0;
+            border-color: #28764e;
+            background: rgba(20, 120, 70, 0.18);
+        }
+
+        /* SCORE GRID */
+        .score-section {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .score-box {
+            background: #081522;
+            border: 1px solid #19374f;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: #829caf;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .score-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: #45d6ff;
+        }
+
+        /* SECTIONS */
+        .section {
+            background: #0b1b2c;
+            border: 1px solid #19374f;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .section-description {
+            color: #8fa7ba;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* VISUAL HEATMAP */
+        .visual-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .visual-card {
+            background: #081522;
+            border: 1px solid #19374f;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .visual-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            display: block;
+            background: #02080e;
+        }
+
+        .visual-caption {
+            padding: 15px;
+            font-size: 13px;
+            color: #9eb4c5;
+            line-height: 1.5;
+        }
+
+        /* METRICS TABLE */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .metric {
+            background: #0c1e30;
+            border: 1px solid #17364e;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .metric-name {
+            font-size: 11px;
+            color: #7f98aa;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+
+        .metric-val {
+            font-size: 17px;
+            font-weight: 700;
+            color: #dcecf5;
+        }
+
+        /* INTERPRETATION */
+        .interpretation {
+            background: linear-gradient(135deg, #0c2237, #081522);
+            border: 1px solid #23506d;
+            border-radius: 15px;
+            padding: 22px;
+            line-height: 1.7;
+        }
+
+        .interpretation-title {
+            color: #45d6ff;
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .interpretation-message {
+            color: #d4e2eb;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .important-note {
+            color: #ffcf88;
+            background: rgba(120, 80, 20, 0.12);
+            border-left: 3px solid #c28b35;
+            padding: 12px 15px;
+            font-size: 12px;
+            border-radius: 5px;
+        }
+
+        /* BUTTONS */
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .button {
+            text-decoration: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .button-primary {
+            background: #45d6ff;
+            color: #04111c;
+        }
+
+        .button-secondary {
+            background: #142b40;
+            color: #d9e8f1;
+            border: 1px solid #244760;
+        }
+
+        footer {
+            text-align: center;
+            color: #60798d;
+            font-size: 11px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🛡️ Evidence<span>Guard</span></div>
+    <div class="tagline">DIGITAL EVIDENCE FORENSICS • STANDALONE VERIFICATION</div>
+</header>
+
+<main class="container">
+
+    <!-- VERDICT OVERVIEW -->
+    <section class="result-card">
+        <div class="result-header">
+            <div>
+                <div class="result-title">Single Image Verification Result</div>
+                <div class="result-subtitle">
+                    Assessing internal compression grids, PRNU sensor noise consistency, and digital editor traces.
+                </div>
+            </div>
+
+            <div class="verdict 
+                {% if 'LIKELY EDITED' in result.verdict %}tampered
+                {% elif 'SUSPICIOUS' in result.verdict %}suspicious
+                {% else %}authentic{% endif %}">
+                {{ result.verdict }}
+            </div>
+        </div>
+
+        <div class="score-section">
+            <div class="score-box">
+                <div class="score-label">Suspicion Score</div>
+                <div class="score-value">{{ result.suspicion_score }}%</div>
+            </div>
+
+            <div class="score-box">
+                <div class="score-label">Confidence</div>
+                <div class="score-value" style="font-size: 22px;">{{ result.confidence }}</div>
+            </div>
+
+            <div class="score-box">
+                <div class="score-label">Dimensions</div>
+                <div class="score-value" style="font-size: 20px;">{{ result.dimensions }}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISUAL FORENSIC HEATMAP -->
+    <section class="section">
+        <div class="section-title">Error Level Analysis (ELA) Heatmap</div>
+        <div class="section-description">
+            Regions colored in bright red, yellow, or high-contrast hot spots indicate local areas where the compression rate deviates from the rest of the canvas.
+        </div>
+
+        <div class="visual-container">
+            <div class="visual-card">
+                <img src="{{ url_for('static', filename='results/' + result.ela_heatmap) }}" alt="ELA Heatmap">
+                <div class="visual-caption">
+                    <strong>Forensic Compression Heatmap</strong><br>
+                    Uniform blue/dark tones indicate consistent single-pass compression. Bright hot-spots highlight potential splices, inpainting, or digital insertions.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DETAILED METRIC BREAKDOWN -->
+    <section class="section">
+        <div class="section-title">Forensic Metric Breakdown</div>
+        <div class="section-description">Statistical measurements calculated across grid patches of the image canvas.</div>
+
+        <div class="metric-grid">
+            <div class="metric">
+                <div class="metric-name">ELA Inconsistency (CV)</div>
+                <div class="metric-val">{{ result.ela_cv }}%</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Noise Residual Variance (CV)</div>
+                <div class="metric-val">{{ result.noise_cv }}%</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Editor Signature Points</div>
+                <div class="metric-val">{{ result.metadata_score }}</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">SHA-256 Hash</div>
+                <div class="metric-val" style="font-size: 11px; word-break: break-all; font-family: monospace;">
+                    {{ result.sha256 }}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERPRETATION -->
+    <section class="section">
+        <div class="section-title">Analysis Interpretation</div>
+        <div class="interpretation">
+            <div class="interpretation-title">{{ result.verdict }}</div>
+            <div class="interpretation-message">{{ result.explanation }}</div>
+
+            <div class="important-note">
+                <strong>Forensic Note:</strong> Standalone image verification evaluates mathematical markers of re-saving and editing. For absolute legal certainty, comparative analysis with a known baseline image is recommended.
+            </div>
+        </div>
+    </section>
+
+    <!-- ACTION BUTTONS -->
+    <div class="actions">
+        <a href="/" class="button button-primary">← Test Another Image</a>
+        <button type="button" class="button button-secondary" onclick="window.print()">🖨 Print Report</button>
+    </div>
+
+</main>
+
+<footer>
+    🛡️ EvidenceGuard • Digital Evidence Integrity Detector
+</footer>
+
+</body>
+</html>

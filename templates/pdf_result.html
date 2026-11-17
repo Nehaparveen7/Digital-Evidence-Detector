@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EvidenceGuard | PDF Forensic Comparison</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .verdict-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #16a34a;
+        }
+        .verdict-box.tampered {
+            border-color: #dc2626;
+        }
+        .verdict-title {
+            color: #16a34a;
+        }
+        .verdict-box.tampered .verdict-title {
+            color: #dc2626;
+        }
+        .diff-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        .diff-table th, .diff-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            text-align: left;
+        }
+        .orig-cell {
+            background-color: #fee2e2;
+        }
+        .mod-cell {
+            background-color: #dcfce7;
+        }
+        .diff-preview {
+            max-width: 100%;
+            border: 1px solid #cbd5e1;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Forensic Diff &amp; Tamper Report</h1>
+        <a href="/">← Back to EvidenceGuard Home</a>
+
+        <div class="verdict-box {% if result.is_tampered %}tampered{% endif %}">
+            <h2 class="verdict-title">{{ result.verdict }}</h2>
+            <p>{{ result.summary }}</p>
+            <p><strong>Original File:</strong> {{ result.orig_filename }} ({{ result.orig_pages }} pages)</p>
+            <p><strong>Suspect File:</strong> {{ result.susp_filename }} ({{ result.susp_pages }} pages)</p>
+        </div>
+
+        {% if result.meta_alerts %}
+        <h3>Metadata &amp; Structure Alerts</h3>
+        <ul>
+            {% for alert in result.meta_alerts %}
+            <li>{{ alert }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <h3>Detected Text Changes ({{ result.total_text_changes }})</h3>
+        {% if result.text_changes %}
+        <table class="diff-table">
+            <thead>
+                <tr>
+                    <th>Page</th>
+                    <th>Change Type</th>
+                    <th>Original Text</th>
+                    <th>Suspect / Modified Text</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in result.text_changes %}
+                <tr>
+                    <td>Page {{ item.page }}</td>
+                    <td><strong>{{ item.type }}</strong></td>
+                    <td class="orig-cell">{{ item.original }}</td>
+                    <td class="mod-cell">{{ item.modified }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No selectable text differences found.</p>
+        {% endif %}
+
+        <h3>Visual Page Comparison (Highlighted Differences)</h3>
+        {% if result.visual_diffs %}
+            {% for v in result.visual_diffs %}
+            <div style="margin-bottom: 24px;">
+                <h4>Page {{ v.page }} — {{ v.regions_found }} Visual Difference Region(s)</h4>
+                <img class="diff-preview" src="{{ url_for('static', filename='results/' + v.diff_image) }}" alt="Page {{ v.page }} Visual Diff">
+            </div>
+            {% endfor %}
+        {% else %}
+        <p>No visual pixel differences detected across pages.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
