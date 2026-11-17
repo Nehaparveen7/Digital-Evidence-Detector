@@ -14,6 +14,7 @@ import hashlib
 import json
 import traceback
 import io
+import gc
 
 import cv2
 import numpy as np
@@ -553,9 +554,13 @@ def analyze_single_image(filepath, result_folder=None):
     if img is None:
         return None
 
+    # Downscale oversized screenshots so Render's 512 MB RAM doesn't overflow
     h, w = img.shape[:2]
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype(np.float32)
+    max_dim = 1000
+    if max(h, w) > max_dim:
+        scale = max_dim / float(max(h, w))
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+        h, w = img.shape[:2]
 
     # 1. Generate ELA Map
     ela_map = compute_ela_map(img, quality=90)
@@ -639,7 +644,7 @@ def analyze_single_image(filepath, result_folder=None):
 
     cv2.imwrite(os.path.join(result_folder, heatmap_filename), ela_heatmap)
     cv2.imwrite(os.path.join(result_folder, annotated_filename), annotated)
-
+    gc.collect()
     return {
         "filename": filename,
         "is_edited": is_edited,
