@@ -554,7 +554,14 @@ def analyze_single_image(filepath, result_folder=None):
     if img is None:
         return None
 
+    # Resize huge mobile photos so Render's 512 MB RAM doesn't crash (502 OOM)
+    max_dim = 1280
     h, w = img.shape[:2]
+    if max(h, w) > max_dim:
+        scale = max_dim / max(h, w)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+        h, w = img.shape[:2]
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype(np.float32)
 
