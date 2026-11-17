@@ -5,3 +5,5 @@ Pillow
 PyMuPDF
 google-genai
 gunicorn
+joblib
+scikit-learn
