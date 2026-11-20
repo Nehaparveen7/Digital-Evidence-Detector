@@ -2,105 +2,606 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EvidenceGuard | PDF Forensic Comparison</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .verdict-box {
-            margin-top: 20px;
-            padding: 16px;
+        :root {
+            --bg-primary: #070913;
+            --bg-surface: #0e1225;
+            --bg-card: #131830;
+            --bg-inner: #090c1a;
+            --accent: #635bff;
+            --accent-glow: rgba(99, 91, 255, 0.35);
+            --accent-light: #8b85ff;
+            --border-subtle: rgba(139, 133, 255, 0.18);
+            --border-active: rgba(139, 133, 255, 0.5);
+            --text-primary: #f4f6ff;
+            --text-secondary: #98a2c3;
+            --text-muted: #657096;
+            --danger: #ff5a65;
+            --danger-bg: rgba(239, 68, 68, 0.14);
+            --danger-border: rgba(239, 68, 68, 0.45);
+            --success: #34d399;
+            --success-bg: rgba(16, 185, 129, 0.14);
+            --success-border: rgba(16, 185, 129, 0.45);
+            --warning: #fbbf24;
+            --warning-bg: rgba(245, 158, 11, 0.14);
+            --warning-border: rgba(245, 158, 11, 0.45);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 80% 15%, rgba(99, 91, 255, 0.14) 0%, rgba(7, 9, 19, 1) 55%), var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* TOP NAVIGATION */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 6%;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(7, 9, 19, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .brand-shield {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #7c74ff, #4c44db);
             border-radius: 8px;
-            border: 2px solid #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--accent-glow);
         }
-        .verdict-box.tampered {
-            border-color: #dc2626;
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
         }
-        .verdict-title {
-            color: #16a34a;
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 4px;
+            position: relative;
+            transition: color 0.2s ease;
         }
-        .verdict-box.tampered .verdict-title {
-            color: #dc2626;
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
         }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -19px;
+            left: 0;
+            right: 0;
+            height: 2.5px;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            border-radius: 2px;
+        }
+
+        /* CONTAINER */
+        .container {
+            width: 92%;
+            max-width: 1120px;
+            margin: 34px auto;
+        }
+
+        /* PANEL CARDS */
+        .panel-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 28px 30px;
+            margin-bottom: 26px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        }
+
+        .panel-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .panel-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(99, 91, 255, 0.16);
+            border: 1px solid rgba(99, 91, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-light);
+        }
+
+        .panel-title {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn-report {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #6b63ff, #5248e5);
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(99, 91, 255, 0.35);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-report:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(99, 91, 255, 0.5);
+        }
+
+        /* VERDICT BANNER */
+        .verdict-banner {
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border: 1px solid;
+            margin-bottom: 20px;
+        }
+
+        .verdict-banner.tampered {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(20, 14, 28, 0.95));
+            border-color: var(--danger-border);
+        }
+        .verdict-banner.tampered .verdict-badge-icon { background: var(--danger); color: #090b16; }
+        .verdict-banner.tampered .verdict-heading { color: #ff6b74; }
+
+        .verdict-banner.clean {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(14, 24, 32, 0.95));
+            border-color: var(--success-border);
+        }
+        .verdict-banner.clean .verdict-badge-icon { background: var(--success); color: #090b16; }
+        .verdict-banner.clean .verdict-heading { color: #6ee7b7; }
+
+        .verdict-badge-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .verdict-heading {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .verdict-summary {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        /* DOCUMENT METADATA CARDS */
+        .doc-pair-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .doc-tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+
+        .doc-tile-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .doc-tile-val {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .doc-tile-sub {
+            font-size: 12px;
+            color: var(--accent-light);
+            margin-top: 4px;
+        }
+
+        /* METADATA ALERTS */
+        .alert-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .alert-list li {
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            color: #fde68a;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        /* TEXT DIFF TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+
         .diff-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 24px;
+            min-width: 680px;
         }
-        .diff-table th, .diff-table td {
-            border: 1px solid #cbd5e1;
-            padding: 8px;
+
+        .diff-table th {
+            background: var(--bg-inner);
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 13px 14px;
             text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
         }
+
+        .diff-table td {
+            padding: 13px 14px;
+            border-bottom: 1px solid rgba(139, 133, 255, 0.1);
+            font-size: 13px;
+            vertical-align: top;
+            line-height: 1.5;
+        }
+
+        .diff-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .type-pill {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(99, 91, 255, 0.18);
+            color: var(--accent-light);
+            border: 1px solid rgba(99, 91, 255, 0.35);
+        }
+
         .orig-cell {
-            background-color: #fee2e2;
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 12.5px;
         }
+
         .mod-cell {
-            background-color: #dcfce7;
+            background: rgba(16, 185, 129, 0.12);
+            color: #6ee7b7;
+            font-family: 'Courier New', monospace;
+            font-size: 12.5px;
         }
+
+        .empty-note {
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 16px 18px;
+            border-radius: 12px;
+        }
+
+        /* VISUAL PAGE DIFFS */
+        .visual-page-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .visual-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .region-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            color: #ff8f96;
+        }
+
         .diff-preview {
-            max-width: 100%;
-            border: 1px solid #cbd5e1;
-            margin-top: 8px;
+            width: 100%;
+            max-height: 540px;
+            object-fit: contain;
+            display: block;
+            border-radius: 10px;
+            background: #060811;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* ACTIONS & FOOTER */
+        .actions-bar {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            padding: 11px 20px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-active);
+            background: #1a2140;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 34px;
+        }
+
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            .navbar, .actions-bar, .btn-report { display: none !important; }
+            .panel-card, .doc-tile, .visual-page-card, .verdict-banner {
+                background: #fff !important;
+                border: 1px solid #ccc !important;
+                color: #000 !important;
+                box-shadow: none !important;
+            }
+            .panel-title, .doc-tile-val, .verdict-heading, .diff-table td {
+                color: #000 !important;
+            }
+            .orig-cell { background: #fee2e2 !important; color: #991b1b !important; }
+            .mod-cell  { background: #dcfce7 !important; color: #166534 !important; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>PDF Forensic Diff &amp; Tamper Report</h1>
-        <a href="/">← Back to EvidenceGuard Home</a>
 
-        <div class="verdict-box {% if result.is_tampered %}tampered{% endif %}">
-            <h2 class="verdict-title">{{ result.verdict }}</h2>
-            <p>{{ result.summary }}</p>
-            <p><strong>Original File:</strong> {{ result.orig_filename }} ({{ result.orig_pages }} pages)</p>
-            <p><strong>Suspect File:</strong> {{ result.susp_filename }} ({{ result.susp_pages }} pages)</p>
+    <!-- TOP NAVIGATION -->
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <div class="brand-shield">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </svg>
+            </div>
+            <span>EvidenceGuard</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/" class="nav-link active">Compare</a>
+            <a href="/" class="nav-link">Analyze</a>
+            <a href="/" class="nav-link">About</a>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- CARD 1: OVERVIEW & VERDICT -->
+        <section class="panel-card">
+            <div class="panel-topbar">
+                <div class="panel-title-wrap">
+                    <div class="panel-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <h1 class="panel-title">PDF Forensic Diff &amp; Tamper Report</h1>
+                </div>
+
+                <button type="button" class="btn-report" onclick="window.print()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download PDF Report
+                </button>
+            </div>
+
+            <div class="verdict-banner {% if result.is_tampered %}tampered{% else %}clean{% endif %}">
+                <div class="verdict-badge-icon">
+                    {% if result.is_tampered %}!{% else %}&#10003;{% endif %}
+                </div>
+                <div>
+                    <div class="verdict-heading">{{ result.verdict }}</div>
+                    <div class="verdict-summary">{{ result.summary }}</div>
+                </div>
+            </div>
+
+            <div class="doc-pair-grid">
+                <div class="doc-tile">
+                    <div class="doc-tile-label">Original Document</div>
+                    <div class="doc-tile-val">{{ result.orig_filename }}</div>
+                    <div class="doc-tile-sub">{{ result.orig_pages }} page(s)</div>
+                </div>
+
+                <div class="doc-tile">
+                    <div class="doc-tile-label">Suspect Document</div>
+                    <div class="doc-tile-val">{{ result.susp_filename }}</div>
+                    <div class="doc-tile-sub">{{ result.susp_pages }} page(s)</div>
+                </div>
+
+                <div class="doc-tile">
+                    <div class="doc-tile-label">Detected Text Changes</div>
+                    <div class="doc-tile-val">{{ result.total_text_changes }}</div>
+                    <div class="doc-tile-sub">Line &amp; content modifications</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARD 2: METADATA & STRUCTURE ALERTS (IF ANY) -->
+        {% if result.meta_alerts %}
+        <section class="panel-card">
+            <div class="panel-topbar" style="margin-bottom: 16px;">
+                <h2 class="panel-title" style="font-size: 18px;">Metadata &amp; Structure Alerts</h2>
+            </div>
+            <ul class="alert-list">
+                {% for alert in result.meta_alerts %}
+                <li>{{ alert }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        <!-- CARD 3: DETECTED TEXT CHANGES -->
+        <section class="panel-card">
+            <div class="panel-topbar" style="margin-bottom: 16px;">
+                <h2 class="panel-title" style="font-size: 18px;">Detected Text Changes ({{ result.total_text_changes }})</h2>
+            </div>
+
+            {% if result.text_changes %}
+            <div class="table-wrap">
+                <table class="diff-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 90px;">Page</th>
+                            <th style="width: 130px;">Change Type</th>
+                            <th>Original Text</th>
+                            <th>Suspect / Modified Text</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in result.text_changes %}
+                        <tr>
+                            <td>Page {{ item.page }}</td>
+                            <td><span class="type-pill">{{ item.type }}</span></td>
+                            <td class="orig-cell">{{ item.original }}</td>
+                            <td class="mod-cell">{{ item.modified }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-note">No selectable text differences were found between the two PDF files.</div>
+            {% endif %}
+        </section>
+
+        <!-- CARD 4: VISUAL PAGE COMPARISON -->
+        <section class="panel-card">
+            <div class="panel-topbar" style="margin-bottom: 16px;">
+                <h2 class="panel-title" style="font-size: 18px;">Visual Page Comparison (Highlighted Differences)</h2>
+            </div>
+
+            {% if result.visual_diffs %}
+                {% for v in result.visual_diffs %}
+                <div class="visual-page-card">
+                    <div class="visual-page-header">
+                        <span>Page {{ v.page }}</span>
+                        <span class="region-badge">{{ v.regions_found }} Visual Difference Region(s)</span>
+                    </div>
+                    <img class="diff-preview" src="{{ url_for('static', filename='results/' + v.diff_image) }}" alt="Page {{ v.page }} Visual Diff" loading="lazy">
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-note">No visual pixel differences detected across pages.</div>
+            {% endif %}
+        </section>
+
+        <!-- ACTIONS -->
+        <div class="actions-bar">
+            <a href="/" class="btn-secondary">&larr; Back to EvidenceGuard Home</a>
+            <button type="button" class="btn-report" onclick="window.print()">Print / Save PDF Report</button>
         </div>
 
-        {% if result.meta_alerts %}
-        <h3>Metadata &amp; Structure Alerts</h3>
-        <ul>
-            {% for alert in result.meta_alerts %}
-            <li>{{ alert }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+        <footer class="footer">
+            EvidenceGuard &bull; Digital Evidence Integrity Detector
+        </footer>
+    </main>
 
-        <h3>Detected Text Changes ({{ result.total_text_changes }})</h3>
-        {% if result.text_changes %}
-        <table class="diff-table">
-            <thead>
-                <tr>
-                    <th>Page</th>
-                    <th>Change Type</th>
-                    <th>Original Text</th>
-                    <th>Suspect / Modified Text</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in result.text_changes %}
-                <tr>
-                    <td>Page {{ item.page }}</td>
-                    <td><strong>{{ item.type }}</strong></td>
-                    <td class="orig-cell">{{ item.original }}</td>
-                    <td class="mod-cell">{{ item.modified }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No selectable text differences found.</p>
-        {% endif %}
-
-        <h3>Visual Page Comparison (Highlighted Differences)</h3>
-        {% if result.visual_diffs %}
-            {% for v in result.visual_diffs %}
-            <div style="margin-bottom: 24px;">
-                <h4>Page {{ v.page }} — {{ v.regions_found }} Visual Difference Region(s)</h4>
-                <img class="diff-preview" src="{{ url_for('static', filename='results/' + v.diff_image) }}" alt="Page {{ v.page }} Visual Diff">
-            </div>
-            {% endfor %}
-        {% else %}
-        <p>No visual pixel differences detected across pages.</p>
-        {% endif %}
-    </div>
 </body>
 </html>

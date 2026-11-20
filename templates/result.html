@@ -1,1880 +1,758 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>EvidenceGuard | Forensic Results</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvidenceGuard | Comparison Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-primary: #070913;
+            --bg-surface: #0e1225;
+            --bg-card: #131830;
+            --bg-inner: #0a0d1c;
+            --accent: #635bff;
+            --accent-glow: rgba(99, 91, 255, 0.35);
+            --accent-light: #8b85ff;
+            --border-subtle: rgba(139, 133, 255, 0.18);
+            --border-active: rgba(139, 133, 255, 0.5);
+            --text-primary: #f4f6ff;
+            --text-secondary: #98a2c3;
+            --text-muted: #657096;
+            --danger: #ff5a65;
+            --danger-bg: rgba(239, 68, 68, 0.12);
+            --danger-border: rgba(239, 68, 68, 0.45);
+            --success: #34d399;
+            --success-bg: rgba(16, 185, 129, 0.12);
+            --success-border: rgba(16, 185, 129, 0.45);
+            --warning: #fbbf24;
+            --warning-bg: rgba(245, 158, 11, 0.12);
+            --warning-border: rgba(245, 158, 11, 0.45);
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #07111f;
-            color: #e8f0f7;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 80% 15%, rgba(99, 91, 255, 0.14) 0%, rgba(7, 9, 19, 1) 55%), var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             padding-bottom: 60px;
         }
 
-        header {
-            background:
-                linear-gradient(
-                    135deg,
-                    #0b1c30,
-                    #07111f
-                );
-
-            border-bottom: 1px solid #18334d;
-
-            padding: 25px 20px;
-
-            text-align: center;
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 6%;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(7, 9, 19, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .logo {
-            font-size: 30px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 1px;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
         }
 
-        .logo span {
-            color: #45d6ff;
+        .brand-shield {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #7c74ff, #4c44db);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        .tagline {
-            margin-top: 8px;
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: #8da8bd;
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
         }
 
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 4px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -19px;
+            left: 0;
+            right: 0;
+            height: 2.5px;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            border-radius: 2px;
+        }
+
+        /* MAIN CONTAINER */
         .container {
             width: 92%;
-            max-width: 1200px;
-            margin: 35px auto;
+            max-width: 1140px;
+            margin: 34px auto;
         }
 
-        .result-card {
-            background:
-                linear-gradient(
-                    145deg,
-                    #0d2137,
-                    #091827
-                );
-
-            border: 1px solid #1d425f;
-
+        /* HERO COMPARISON CARD (MATCHING MOCKUP PANEL 2) */
+        .main-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 18px;
-
-            padding: 30px;
-
-            margin-bottom: 25px;
-
-            box-shadow:
-                0 15px 40px
-                rgba(0, 0, 0, 0.25);
+            padding: 28px;
+            margin-bottom: 26px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
         }
 
-        .result-header {
+        .panel-topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
             flex-wrap: wrap;
-        }
-
-        .result-title {
-            font-size: 25px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .result-subtitle {
-            margin-top: 8px;
-            color: #9db4c8;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .verdict {
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border: 1px solid;
-        }
-
-        .verdict.high {
-            color: #ff8f8f;
-            border-color: #9f3535;
-            background: rgba(150, 30, 30, 0.18);
-        }
-
-        .verdict.medium {
-            color: #ffd27a;
-            border-color: #936c25;
-            background: rgba(150, 100, 20, 0.18);
-        }
-
-        .verdict.low {
-            color: #7ff0b0;
-            border-color: #28764e;
-            background: rgba(20, 120, 70, 0.18);
-        }
-
-        .verdict.insufficient {
-            color: #a9c1d1;
-            border-color: #426176;
-            background: rgba(50, 80, 100, 0.18);
-        }
-
-        .score-section {
-            margin-top: 30px;
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    auto-fit,
-                    minmax(180px, 1fr)
-                );
-
-            gap: 15px;
-        }
-
-        .score-box {
-            background: #081522;
-
-            border: 1px solid #19374f;
-
-            border-radius: 14px;
-
-            padding: 20px;
-        }
-
-        .score-label {
-            font-size: 12px;
-
-            color: #829caf;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-
-            margin-bottom: 8px;
-        }
-
-        .score-value {
-            font-size: 28px;
-
-            font-weight: 800;
-
-            color: #45d6ff;
-        }
-
-        .section {
-            background: #0b1b2c;
-
-            border: 1px solid #19374f;
-
-            border-radius: 18px;
-
-            padding: 25px;
-
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 20px;
-
-            font-weight: 700;
-
-            color: #ffffff;
-
-            margin-bottom: 8px;
-        }
-
-        .section-description {
-            color: #8fa7ba;
-
-            font-size: 13px;
-
-            line-height: 1.6;
-
-            margin-bottom: 22px;
-        }
-
-        .suspicious-box {
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(130, 25, 25, 0.18),
-                    rgba(8, 21, 34, 0.9)
-                );
-
-            border: 1px solid #793838;
-
-            border-radius: 15px;
-
-            padding: 22px;
-        }
-
-        .suspicious-label {
-            color: #ff8f8f;
-
-            font-size: 12px;
-
-            font-weight: 800;
-
-            letter-spacing: 1.5px;
-
-            text-transform: uppercase;
-
-            margin-bottom: 10px;
-        }
-
-        .suspicious-name {
-            font-size: 21px;
-
-            font-weight: 700;
-
-            color: #ffffff;
-
-            word-break: break-word;
-        }
-
-        .suspicious-score {
-            margin-top: 8px;
-
-            color: #ffb0b0;
-
-            font-size: 14px;
-        }
-
-        .table-wrapper {
-            width: 100%;
-
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-
-            border-collapse: collapse;
-
-            min-width: 750px;
-        }
-
-        th {
-            background: #081522;
-
-            color: #8fa9bd;
-
-            font-size: 11px;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-
-            padding: 14px;
-
-            text-align: left;
-
-            border-bottom: 1px solid #1d3b53;
-        }
-
-        td {
-            padding: 15px 14px;
-
-            border-bottom: 1px solid #163148;
-
-            color: #d8e5ee;
-
-            font-size: 13px;
-
-            vertical-align: top;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .suspicious-row {
-            background: rgba(120, 30, 30, 0.12);
-        }
-
-        .status-badge {
-            display: inline-block;
-
-            padding: 6px 10px;
-
-            border-radius: 20px;
-
-            font-size: 10px;
-
-            font-weight: 800;
-
-            letter-spacing: 0.8px;
-        }
-
-        .status-suspicious {
-            color: #ff9999;
-
-            background: rgba(160, 35, 35, 0.2);
-
-            border: 1px solid #713838;
-        }
-
-        .status-normal {
-            color: #8be8b1;
-
-            background: rgba(30, 120, 70, 0.15);
-
-            border: 1px solid #286144;
-        }
-
-        .hash {
-            font-family: "Courier New", monospace;
-
-            font-size: 10px;
-
-            color: #7691a5;
-
-            word-break: break-all;
-
-            max-width: 280px;
-        }
-
-    </style>
-
-</head>
-
-
-<body>
-
-
-<header>
-
-    <div class="logo">
-        🛡️ Evidence<span>Guard</span>
-    </div>
-
-    <div class="tagline">
-        DIGITAL FORENSICS • IMAGE INTEGRITY ANALYSIS
-    </div>
-
-</header>
-
-
-<main class="container">
-
-
-    <!-- =====================================================
-         MAIN RESULT
-    ===================================================== -->
-
-    <section class="result-card">
-
-        <div class="result-header">
-
-            <div>
-
-                <div class="result-title">
-                    Forensic Analysis Complete
-                </div>
-
-                <div class="result-subtitle">
-
-                    Multiple image-analysis techniques were used
-                    to identify the image that appears most
-                    statistically anomalous within the submitted
-                    image set.
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="verdict
-                {% if result.interpretation.level == 'HIGH' %}
-                    high
-                {% elif result.interpretation.level == 'MEDIUM' %}
-                    medium
-                {% elif result.interpretation.level == 'LOW' %}
-                    low
-                {% else %}
-                    insufficient
-                {% endif %}"
-            >
-
-                {{ result.interpretation.level }}
-
-            </div>
-
-        </div>
-
-
-        <!-- SCORE BOXES -->
-
-        <div class="score-section">
-
-            <div class="score-box">
-
-                <div class="score-label">
-                    Images Analysed
-                </div>
-
-                <div class="score-value">
-                    {{ result.image_count }}
-                </div>
-
-            </div>
-
-
-            <div class="score-box">
-
-                <div class="score-label">
-                    Suspicion Score
-                </div>
-
-                <div class="score-value">
-                    {{ result.interpretation.score }}%
-                </div>
-
-            </div>
-
-
-            <div class="score-box">
-
-                <div class="score-label">
-                    Score Gap
-                </div>
-
-                <div class="score-value">
-                    {{ result.score_gap }}%
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MOST SUSPICIOUS IMAGE
-    ===================================================== -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Most Suspicious Image
-        </div>
-
-        <div class="section-description">
-
-            This image received the highest overall anomaly
-            score after comparison with the other submitted
-            images.
-
-        </div>
-
-
-        <div class="suspicious-box">
-
-            <div class="suspicious-label">
-                Automated Forensic Assessment
-            </div>
-
-            <div class="suspicious-name">
-
-                {{ result.most_suspicious_image }}
-
-            </div>
-
-            <div class="suspicious-score">
-
-                Suspicion score:
-
-                <strong>
-                    {{ result.interpretation.score }}%
-                </strong>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         FORENSIC INTERPRETATION
-    ===================================================== -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Forensic Interpretation
-        </div>
-
-        <div class="section-description">
-
-            Summary generated from the combined comparison
-            metrics.
-
-        </div>
-
-
-        <div class="interpretation">
-
-            <div class="interpretation-title">
-                {{ result.interpretation.title }}
-            </div>
-
-            <div class="interpretation-message">
-                {{ result.interpretation.message }}
-            </div>
-
-            <div class="important-note">
-
-                <strong>
-                    Important:
-                </strong>
-
-                {{ result.interpretation.important_note }}
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         SUBMITTED IMAGES
-    ===================================================== -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Submitted Images
-        </div>
-
-        <div class="section-description">
-
-            SHA-256 values provide a cryptographic fingerprint
-            for each submitted file.
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Image
-                        </th>
-
-                        <th>
-                            Dimensions
-                        </th>
-
-                        <th>
-                            Suspicion
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            SHA-256
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    {% for image in result.images %}
-
-                    <tr
-                        {% if image.suspicious %}
-                            class="suspicious-row"
-                        {% endif %}
-                    >
-
-                        <td>
-
-                            <strong>
-                                {{ image.filename }}
-                            </strong>
-
-                        </td>
-
-                        <td>
-
-                            {{ image.width }}
-                            ×
-                            {{ image.height }}
-
-                        </td>
-
-                        <td>
-
-                            {{ image.suspicion_score }}%
-
-                        </td>
-
-                        <td>
-
-                            {% if image.suspicious %}
-
-                                <span
-                                    class="status-badge
-                                           status-suspicious"
-                                >
-                                    MOST SUSPICIOUS
-                                </span>
-
-                            {% else %}
-
-                                <span
-                                    class="status-badge
-                                           status-normal"
-                                >
-                                    COMPARATIVE BASELINE
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            <div class="hash">
-                                {{ image.sha256 }}
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-    <!-- ========================================================= -->
-<!-- PART 2/3 — PAIRWISE FORENSIC COMPARISON -->
-<!-- ========================================================= -->
-
-    <style>
-
-        /* =====================================================
-           PAIRWISE COMPARISON
-        ===================================================== */
-
-        .pair-card {
-            background: rgba(255, 255, 255, 0.035);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 24px;
-            margin-top: 20px;
-        }
-
-        .pair-title {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 22px;
-        }
-
-        .pair-title h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #ffffff;
-        }
-
-        .pair-number {
-            font-size: 12px;
-            color: #9ca3af;
-            background: rgba(255, 255, 255, 0.06);
-            padding: 7px 12px;
-            border-radius: 20px;
-        }
-
-
-        /* =====================================================
-           METRIC GRID
-        ===================================================== */
-
-        .metric-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(150px, 1fr));
-
-            gap: 12px;
             margin-bottom: 24px;
         }
 
-        .metric {
-            background: rgba(0, 0, 0, 0.22);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        .panel-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(99, 91, 255, 0.16);
+            border: 1px solid rgba(99, 91, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-light);
+        }
+
+        .panel-title {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn-report {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #6b63ff, #5248e5);
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 16px rgba(99, 91, 255, 0.35);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-report:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(99, 91, 255, 0.5);
+        }
+
+        /* 3-COLUMN IMAGE VISUAL GRID (IMAGE 1 | IMAGE 2 | DIFFERENCE MAP) */
+        .pair-block {
+            margin-bottom: 24px;
+        }
+
+        .pair-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .visual-trio {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .img-frame {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .img-frame-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .img-box {
+            background: #060811;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            max-height: 360px;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .img-caption {
+            margin-top: 10px;
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        /* VERDICT BANNER + DIFFERENCE SCORE CARD (BOTTOM OF MOCKUP PANEL 2) */
+        .verdict-row {
+            display: grid;
+            grid-template-columns: 1fr 240px;
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .alert-banner {
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border: 1px solid;
+        }
+
+        .alert-banner.high {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(20, 14, 28, 0.95));
+            border-color: var(--danger-border);
+        }
+        .alert-banner.high .alert-icon { background: var(--danger); color: #090b16; }
+        .alert-banner.high .alert-heading { color: #ff6b74; }
+
+        .alert-banner.medium {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(20, 18, 28, 0.95));
+            border-color: var(--warning-border);
+        }
+        .alert-banner.medium .alert-icon { background: var(--warning); color: #090b16; }
+        .alert-banner.medium .alert-heading { color: #fcd34d; }
+
+        .alert-banner.low {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(14, 24, 32, 0.95));
+            border-color: var(--success-border);
+        }
+        .alert-banner.low .alert-icon { background: var(--success); color: #090b16; }
+        .alert-banner.low .alert-heading { color: #6ee7b7; }
+
+        .alert-banner.insufficient {
+            background: var(--bg-card);
+            border-color: var(--border-subtle);
+        }
+        .alert-banner.insufficient .alert-icon { background: var(--accent); color: #fff; }
+        .alert-banner.insufficient .alert-heading { color: var(--text-primary); }
+
+        .alert-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .alert-heading {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .alert-sub {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .score-highlight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .score-highlight-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .score-highlight-val {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        /* SECONDARY FORENSIC SECTIONS */
+        .section-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 26px 28px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: 12px;
+        }
+
+        .metric-tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             border-radius: 12px;
-            padding: 14px;
+            padding: 14px 16px;
         }
 
         .metric-name {
             font-size: 11px;
-            color: #9ca3af;
+            color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 7px;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
         }
 
-        .metric-value {
+        .metric-val {
             font-size: 18px;
             font-weight: 700;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
+        /* SUBMITTED FILES TABLE */
+        .table-wrap { overflow-x: auto; }
 
-        /* =====================================================
-           VISUAL RESULTS
-        ===================================================== */
-
-        .visual-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(250px, 1fr));
-
-            gap: 18px;
-            margin-top: 20px;
-        }
-
-        .visual-card {
-            background: rgba(0, 0, 0, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px;
-            padding: 12px;
-            overflow: hidden;
-        }
-
-        .visual-card img {
+        table {
             width: 100%;
-            height: auto;
-            max-height: 420px;
-            object-fit: contain;
-            display: block;
-            border-radius: 10px;
-            background: #050505;
+            border-collapse: collapse;
+            min-width: 720px;
         }
 
-        .visual-caption {
-            padding: 12px 5px 3px 5px;
-            color: #d1d5db;
-            font-size: 12px;
-            line-height: 1.5;
+        th {
+            background: var(--bg-inner);
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 13px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
-        .visual-caption strong {
-            color: #ffffff;
+        td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(139, 133, 255, 0.1);
+            font-size: 13px;
+            color: var(--text-primary);
         }
 
-
-        /* =====================================================
-           FORENSIC INTERPRETATION
-        ===================================================== */
-
-        .interpretation {
-            margin-top: 28px;
-            border-radius: 16px;
-            padding: 22px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(255, 255, 255, 0.045),
-                    rgba(255, 255, 255, 0.015)
-                );
-
-            border: 1px solid rgba(255, 255, 255, 0.09);
+        tr.suspicious-row {
+            background: rgba(239, 68, 68, 0.08);
         }
 
-        .interpretation-title {
-            font-size: 17px;
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
             font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 12px;
+            letter-spacing: 0.6px;
         }
 
-        .interpretation-message {
-            color: #d1d5db;
-            font-size: 14px;
-            line-height: 1.7;
+        .badge-suspicious {
+            color: #ff8f96;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
         }
 
-        .important-note {
-            margin-top: 18px;
+        .badge-normal {
+            color: #6ee7b7;
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+        }
+
+        .hash {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            word-break: break-all;
+            max-width: 260px;
+        }
+
+        .note-box {
+            margin-top: 16px;
             padding: 14px 16px;
-
-            background: rgba(255, 193, 7, 0.08);
-            border: 1px solid rgba(255, 193, 7, 0.25);
-
+            background: rgba(99, 91, 255, 0.08);
+            border: 1px solid var(--border-subtle);
             border-radius: 10px;
-
-            color: #f3f4f6;
-            font-size: 12px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
             line-height: 1.6;
         }
 
-
-        /* =====================================================
-           ACTION BUTTONS
-        ===================================================== */
-
-        .actions {
+        .actions-bar {
             display: flex;
             justify-content: center;
-            align-items: center;
             gap: 14px;
-            flex-wrap: wrap;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
 
-        .button {
+        .btn-secondary {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-
-            min-width: 170px;
-
-            padding: 12px 20px;
-
-            border-radius: 10px;
-
-            text-decoration: none;
-
+            gap: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            padding: 11px 20px;
+            border-radius: 9px;
             font-size: 13px;
-            font-weight: 700;
-
-            transition:
-                transform 0.2s ease,
-                opacity 0.2s ease,
-                background 0.2s ease;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            opacity: 0.92;
+        .btn-secondary:hover {
+            border-color: var(--border-active);
+            background: #1a2140;
         }
-
-        .button-primary {
-            background: #ffffff;
-            color: #080808;
-        }
-
-        .button-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-
-            border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-
-        /* =====================================================
-           FOOTER
-        ===================================================== */
 
         .footer {
             text-align: center;
-            color: #6b7280;
-            font-size: 11px;
-            line-height: 1.6;
-            padding: 30px 10px 40px;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 36px;
         }
 
-
-        /* =====================================================
-           MOBILE
-        ===================================================== */
-
-        @media (max-width: 700px) {
-
-            .pair-card {
-                padding: 16px;
-            }
-
-            .metric-grid {
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
-            }
-
-            .visual-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pair-title {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .button {
-                width: 100%;
-            }
+        @media (max-width: 860px) {
+            .visual-trio { grid-template-columns: 1fr; }
+            .verdict-row { grid-template-columns: 1fr; }
         }
-
-
-        /* =====================================================
-           PRINT
-        ===================================================== */
 
         @media print {
-
-            body {
-                background: white !important;
-                color: black !important;
+            body { background: #fff !important; color: #000 !important; }
+            .navbar, .actions-bar, .btn-report { display: none !important; }
+            .main-panel, .section-card, .img-frame, .metric-tile, .score-highlight-card, .alert-banner {
+                background: #fff !important;
+                border: 1px solid #ccc !important;
+                color: #000 !important;
+                box-shadow: none !important;
             }
-
-            .button,
-            .actions {
-                display: none !important;
+            .panel-title, .section-title, .metric-val, .score-highlight-val, .alert-heading, td {
+                color: #000 !important;
             }
-
-            .pair-card,
-            .section,
-            .result-card {
-                background: white !important;
-                border: 1px solid #cccccc !important;
-                color: black !important;
-            }
-
-            .metric {
-                background: white !important;
-                border: 1px solid #dddddd !important;
-            }
-
-            .metric-name,
-            .visual-caption,
-            .interpretation-message {
-                color: #333333 !important;
-            }
-
-            .metric-value,
-            .pair-title h3,
-            .interpretation-title {
-                color: black !important;
-            }
-
-            .visual-card img {
-                max-height: 350px;
+            .alert-sub, .section-desc, .metric-name, .img-caption {
+                color: #333 !important;
             }
         }
-
     </style>
-
-
-    <!-- ========================================================= -->
-    <!-- PAIRWISE FORENSIC COMPARISON -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Pairwise Forensic Comparison
-        </div>
-
-        <p class="section-description">
-            Each submitted image is compared against the other images
-            using multiple independent image-analysis measurements.
-        </p>
-
-
-        {% if result.pairwise %}
-
-            {% for pair in result.pairwise %}
-
-            <div class="pair-card">
-
-                <!-- =================================================
-                     PAIR TITLE
-                ================================================== -->
-
-                <div class="pair-title">
-
-                    <h3>
-                        {{ pair.image_a_name }}
-                        <span style="color:#6b7280;">vs</span>
-                        {{ pair.image_b_name }}
-                    </h3>
-
-                    <div class="pair-number">
-                        Comparison {{ loop.index }}
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     METRICS
-                ================================================== -->
-
-                <div class="metric-grid">
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Overall Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.overall_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Pixel Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.pixel_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Structural Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.structural_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Edge Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.edge_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Noise Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.noise_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Histogram Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.histogram_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Feature Match
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.feature_match) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Color Difference
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.color_difference) }}
-                        </div>
-
-                    </div>
-
-
-                    <div class="metric">
-
-                        <div class="metric-name">
-                            Local Anomaly
-                        </div>
-
-                        <div class="metric-value">
-                            {{ "%.2f"|format(pair.local_anomaly) }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     FORENSIC VISUALIZATIONS
-                ================================================== -->
-
-                <div class="visual-grid">
-
-                    <!-- DIFFERENCE MASK -->
-
-                    <div class="visual-card">
-
-                        <img
-                            src="{{ url_for(
-                                'static',
-                                filename='results/' +
-                                pair.difference_mask
-                            ) }}"
-                            alt="Difference mask"
-                            loading="lazy"
-                        >
-
-                        <div class="visual-caption">
-
-                            <strong>
-                                Difference Mask
-                            </strong>
-
-                            <br>
-
-                            White/light regions indicate areas
-                            where measurable image differences
-                            were detected.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- RED OVERLAY -->
-
-                    <div class="visual-card">
-
-                        <img
-                            src="{{ url_for(
-                                'static',
-                                filename='results/' +
-                                pair.overlay
-                            ) }}"
-                            alt="Red marked suspicious regions"
-                            loading="lazy"
-                        >
-
-                        <div class="visual-caption">
-
-                            <strong>
-                                Red-Marked Difference
-                            </strong>
-
-                            <br>
-
-                            Red regions highlight detected
-                            differences over the first image.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- REVERSE OVERLAY -->
-
-                    <div class="visual-card">
-
-                        <img
-                            src="{{ url_for(
-                                'static',
-                                filename='results/' +
-                                pair.reverse_overlay
-                            ) }}"
-                            alt="Reverse red marked differences"
-                            loading="lazy"
-                        >
-
-                        <div class="visual-caption">
-
-                            <strong>
-                                Reverse Comparison
-                            </strong>
-
-                            <br>
-
-                            The same detected differences are
-                            displayed relative to the second image.
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+</head>
+<body>
+
+    <!-- TOP NAVIGATION -->
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <div class="brand-shield">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </svg>
             </div>
-
-            {% endfor %}
-
-        {% else %}
-
-            <div class="empty-state">
-
-                No pairwise comparisons were generated.
-
-            </div>
-
-        {% endif %}
-
-    </section>
-
-
-    <!-- ========================================================= -->
-    <!-- COMPARISON SUMMARY -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Comparison Summary
-        </div>
-
-
-        <div class="metric-grid">
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Total Comparisons
-                </div>
-
-                <div class="metric-value">
-                    {{ result.pair_summary.total_comparisons }}
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Highest Difference
-                </div>
-
-                <div class="metric-value">
-                    {{ "%.2f"|format(
-                        result.pair_summary.highest_difference
-                    ) }}
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Average Difference
-                </div>
-
-                <div class="metric-value">
-                    {{ "%.2f"|format(
-                        result.pair_summary.average_difference
-                    ) }}
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Strongest Difference Pair
-                </div>
-
-                <div class="metric-value"
-                     style="font-size:14px;">
-
-                    {{ result.pair_summary.strongest_pair }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================================================= -->
-    <!-- SUSPICION RANKING -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Suspicion Ranking
-        </div>
-
-        <div class="pair-card">
-
-            <div class="metric-grid">
-
-                <!-- MOST SUSPICIOUS -->
-
-                <div class="metric">
-
-                    <div class="metric-name">
-                        Most Suspicious Image
-                    </div>
-
-                    <div class="metric-value">
-
-                        Image
-                        {{ result.most_suspicious_index + 1 }}
-
-                    </div>
-
-                </div>
-
-
-                <!-- SECOND MOST SUSPICIOUS -->
-
-                <div class="metric">
-
-                    <div class="metric-name">
-                        Second Most Suspicious
-                    </div>
-
-                    <div class="metric-value">
-
-                        {% if result.second_most_suspicious_index
-                              is not none %}
-
-                            Image
-                            {{ result.second_most_suspicious_index + 1 }}
-
-                        {% else %}
-
-                            N/A
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-
-                <!-- SCORE GAP -->
-
-                <div class="metric">
-
-                    <div class="metric-name">
-                        Score Gap
-                    </div>
-
-                    <div class="metric-value">
-
-                        {{ "%.2f"|format(result.score_gap) }}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =====================================================
-                 INTERPRETATION
-            ====================================================== -->
-
-            <div class="interpretation">
-
-                <div class="interpretation-title">
-
-                    {{ result.interpretation.title }}
-
-                </div>
-
-
-                <div class="interpretation-message">
-
-                    {{ result.interpretation.message }}
-
-                </div>
-
-
-                <div class="important-note">
-
-                    <strong>
-                        Important:
-                    </strong>
-
-                    {{ result.interpretation.important_note }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-    <!-- ========================================================= -->
-<!-- PART 3/3 — FINAL FORENSIC REPORT + JAVASCRIPT -->
-<!-- ========================================================= -->
-
-
-    <!-- ========================================================= -->
-    <!-- FORENSIC CONCLUSION -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Forensic Conclusion
-        </div>
-
-        <div class="pair-card">
-
-            <div class="interpretation">
-
-                <div class="interpretation-title">
-
-                    Automated Forensic Assessment
-
-                </div>
-
-                <div class="interpretation-message">
-
-                    The system identified
-
-                    <strong>
-                        {{ result.most_suspicious_image }}
-                    </strong>
-
-                    as the image with the highest overall
-                    statistical suspicion score among the
-                    submitted images.
-
-                    <br><br>
-
-                    This conclusion is based on the combined
-                    behavior of pixel-level differences,
-                    structural differences, edge changes,
-                    noise characteristics, color differences,
-                    histogram differences, feature consistency,
-                    and localized anomalies.
-
-                </div>
-
-
-                <div class="important-note">
-
-                    <strong>
-                        Forensic limitation:
-                    </strong>
-
-                    A high suspicion score does not prove that
-                    an image was deliberately edited or manipulated.
-                    Differences may also result from resizing,
-                    compression, screenshots, different cameras,
-                    lighting, cropping, format conversion,
-                    or other legitimate processing.
-
-                    The result should therefore be treated as an
-                    automated forensic screening and not as
-                    definitive proof of tampering.
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================================================= -->
-    <!-- ANALYSIS INFORMATION -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Analysis Information
-        </div>
-
-
-        <div class="metric-grid">
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Analysis ID
-                </div>
-
-                <div class="metric-value"
-                     style="font-size:12px;
-                            word-break:break-all;">
-
-                    {{ result.analysis_id }}
-
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Images Analysed
-                </div>
-
-                <div class="metric-value">
-
-                    {{ result.image_count }}
-
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Comparisons Performed
-                </div>
-
-                <div class="metric-value">
-
-                    {{ result.pair_summary.total_comparisons }}
-
-                </div>
-
-            </div>
-
-
-            <div class="metric">
-
-                <div class="metric-name">
-                    Detection Method
-                </div>
-
-                <div class="metric-value"
-                     style="font-size:13px;">
-
-                    Multi-Metric Analysis
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================================================= -->
-    <!-- HOW TO READ THE RED MARKING -->
-    <!-- ========================================================= -->
-
-    <section class="section">
-
-        <div class="section-title">
-            How to Read the Red Marking
-        </div>
-
-        <div class="pair-card">
-
-            <div class="interpretation-message">
-
-                <p>
-                    <strong>Red regions</strong> represent areas
-                    where the system detected measurable differences
-                    between the compared images.
-                </p>
-
-                <p>
-                    Larger or brighter marked regions indicate
-                    stronger detected differences in those areas.
-                </p>
-
-                <p>
-                    The red marking should not automatically be
-                    interpreted as proof that the marked area was
-                    digitally manipulated.
-                </p>
-
-                <p>
-                    For example, a red region can appear because of
-                    different image compression, brightness,
-                    contrast, camera noise, resizing, cropping,
-                    or other normal image-processing operations.
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================================================= -->
-    <!-- FINAL ACTIONS -->
-    <!-- ========================================================= -->
-
-    <div class="actions">
-
-        <a
-            href="/"
-            class="button button-primary"
-        >
-            ← Analyze New Images
+            <span>EvidenceGuard</span>
         </a>
 
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/" class="nav-link active">Compare</a>
+            <a href="/" class="nav-link">Analyze</a>
+            <a href="/" class="nav-link">About</a>
+        </div>
+    </nav>
 
-        <button
-            type="button"
-            class="button button-secondary"
-            onclick="window.print()"
-        >
-            🖨 Print / Save Report
-        </button>
+    <main class="container">
 
-    </div>
+        <!-- HERO COMPARISON RESULTS PANEL -->
+        <section class="main-panel">
+            <div class="panel-topbar">
+                <div class="panel-title-wrap">
+                    <div class="panel-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                    <h1 class="panel-title">Comparison Results</h1>
+                </div>
 
+                <button type="button" class="btn-report" onclick="window.print()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download Report
+                </button>
+            </div>
 
-    <!-- ========================================================= -->
-    <!-- FOOTER -->
-    <!-- ========================================================= -->
+            {% if result.pairwise %}
+                {% for pair in result.pairwise %}
+                <div class="pair-block">
+                    <div class="pair-meta-bar">
+                        <span><strong>{{ pair.image_a_name }}</strong> vs <strong>{{ pair.image_b_name }}</strong></span>
+                        <span>Comparison {{ loop.index }} &bull; ID: {{ result.analysis_id[:12] }}...</span>
+                    </div>
 
-    <footer class="footer">
+                    <!-- 3-CARD VISUAL COMPARISON -->
+                    <div class="visual-trio">
+                        <div class="img-frame">
+                            <div class="img-frame-label">Image 1 ({{ pair.image_a_name }})</div>
+                            <div class="img-box">
+                                <img src="{{ url_for('static', filename='results/' + pair.overlay) }}" alt="Image 1 Red Overlay" loading="lazy">
+                            </div>
+                            <div class="img-caption">Detected differences highlighted over first image</div>
+                        </div>
 
-        <div>
-            <strong>
-                EvidenceGuard
-            </strong>
+                        <div class="img-frame">
+                            <div class="img-frame-label">Image 2 ({{ pair.image_b_name }})</div>
+                            <div class="img-box">
+                                <img src="{{ url_for('static', filename='results/' + pair.reverse_overlay) }}" alt="Image 2 Reverse Overlay" loading="lazy">
+                            </div>
+                            <div class="img-caption">Detected differences highlighted over second image</div>
+                        </div>
+
+                        <div class="img-frame">
+                            <div class="img-frame-label">Difference Map</div>
+                            <div class="img-box">
+                                <img src="{{ url_for('static', filename='results/' + pair.difference_mask) }}" alt="Difference Map" loading="lazy">
+                            </div>
+                            <div class="img-caption">Pixel-level anomaly &amp; structural difference mask</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- VERDICT BANNER + SCORE CARD -->
+            {% set level = result.interpretation.level|lower %}
+            <div class="verdict-row">
+                <div class="alert-banner {% if level in ['high', 'medium', 'low'] %}{{ level }}{% else %}insufficient{% endif %}">
+                    <div class="alert-icon">
+                        {% if level == 'low' %}&#10003;{% else %}!{% endif %}
+                    </div>
+                    <div>
+                        <div class="alert-heading">
+                            {% if level == 'high' %}
+                                Tampering Indicators Found
+                            {% elif level == 'medium' %}
+                                Moderate Differences Detected
+                            {% elif level == 'low' %}
+                                No Significant Tampering Detected
+                            {% else %}
+                                {{ result.interpretation.title }}
+                            {% endif %}
+                        </div>
+                        <div class="alert-sub">
+                            Most anomalous file: <strong>{{ result.most_suspicious_image }}</strong>. {{ result.interpretation.message }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-highlight-card">
+                    <div class="score-highlight-label">Difference / Suspicion Score</div>
+                    <div class="score-highlight-val">{{ result.interpretation.score }}%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETAILED METRICS BREAKDOWN -->
+        {% if result.pairwise %}
+            {% for pair in result.pairwise %}
+            <section class="section-card">
+                <h2 class="section-title">Forensic Metrics ({{ pair.image_a_name }} vs {{ pair.image_b_name }})</h2>
+                <p class="section-desc">Multi-metric pixel, structural, frequency, and statistical variance breakdown.</p>
+
+                <div class="metric-grid">
+                    <div class="metric-tile">
+                        <div class="metric-name">Overall Difference</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.overall_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Pixel Difference</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.pixel_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Structural Diff</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.structural_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Edge Difference</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.edge_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Noise Difference</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.noise_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Histogram Diff</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.histogram_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Feature Match</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.feature_match) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Color Difference</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.color_difference) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-name">Local Anomaly</div>
+                        <div class="metric-val">{{ "%.2f"|format(pair.local_anomaly) }}</div>
+                    </div>
+                </div>
+            </section>
+            {% endfor %}
+        {% endif %}
+
+        <!-- SUBMITTED IMAGES & CRYPTOGRAPHIC HASHES -->
+        <section class="section-card">
+            <h2 class="section-title">Submitted Evidence &amp; SHA-256 Fingerprints</h2>
+            <p class="section-desc">Cryptographic hash verification and individual suspicion ranking across all {{ result.image_count }} submitted files (Score Gap: {{ result.score_gap }}%).</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image File</th>
+                            <th>Dimensions</th>
+                            <th>Suspicion</th>
+                            <th>Status</th>
+                            <th>SHA-256 Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for image in result.images %}
+                        <tr {% if image.suspicious %}class="suspicious-row"{% endif %}>
+                            <td><strong>{{ image.filename }}</strong></td>
+                            <td>{{ image.width }} &times; {{ image.height }}</td>
+                            <td>{{ image.suspicion_score }}%</td>
+                            <td>
+                                {% if image.suspicious %}
+                                    <span class="badge badge-suspicious">MOST SUSPICIOUS</span>
+                                {% else %}
+                                    <span class="badge badge-normal">BASELINE</span>
+                                {% endif %}
+                            </td>
+                            <td><div class="hash">{{ image.sha256 }}</div></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box">
+                <strong>Forensic Note:</strong> {{ result.interpretation.important_note }} Red highlighted regions indicate measurable localized differences; minor variations can also stem from recompression, resizing, or screenshot capture.
+            </div>
+        </section>
+
+        <div class="actions-bar">
+            <a href="/" class="btn-secondary">&larr; Analyze New Evidence</a>
+            <button type="button" class="btn-report" onclick="window.print()">Print / Save Forensic Report</button>
         </div>
 
-        <div>
-            Digital Evidence Integrity and Tampering Detector
-        </div>
+        <footer class="footer">
+            EvidenceGuard &bull; Digital Evidence Integrity &amp; Tampering Detector
+        </footer>
+    </main>
 
-        <div style="margin-top:8px;">
-
-            Automated image comparison and forensic
-            anomaly screening.
-
-        </div>
-
-        <div style="margin-top:12px;">
-
-            This system provides an analytical assessment
-            and does not establish definitive proof of
-            image manipulation.
-
-        </div>
-
-    </footer>
-
-
-</main>
-
-
-<!-- ========================================================= -->
-<!-- JAVASCRIPT -->
-<!-- ========================================================= -->
-
-<script>
-
-    /*
-     * EvidenceGuard Result Page
-     *
-     * This JavaScript is intentionally lightweight.
-     *
-     * The actual forensic calculations are performed
-     * by the Flask/OpenCV backend.
-     */
-
-
-    // =========================================================
-    // IMAGE ERROR HANDLING
-    // =========================================================
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            const images =
-                document.querySelectorAll(
-                    ".visual-card img"
-                );
-
-
-            images.forEach(
-                function (image) {
-
-                    image.addEventListener(
-                        "error",
-                        function () {
-
-                            const container =
-                                image.parentElement;
-
-                            image.style.display = "none";
-
-
-                            const errorMessage =
-                                document.createElement(
-                                    "div"
-                                );
-
-
-                            errorMessage.style.padding =
-                                "30px 15px";
-
-                            errorMessage.style.textAlign =
-                                "center";
-
-                            errorMessage.style.color =
-                                "#9ca3af";
-
-                            errorMessage.style.fontSize =
-                                "12px";
-
-                            errorMessage.innerHTML =
-                                "Result image could not be loaded.";
-
-
-                            container.insertBefore(
-                                errorMessage,
-                                container.firstChild
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-
-            // =================================================
-            // PRINT BUTTON FEEDBACK
-            // =================================================
-
-            const printButton =
-                document.querySelector(
-                    '[onclick="window.print()"]'
-                );
-
-
-            if (printButton) {
-
-                printButton.addEventListener(
-                    "click",
-                    function () {
-
-                        setTimeout(
-                            function () {
-
-                                console.log(
-                                    "EvidenceGuard report print requested."
-                                );
-
-                            },
-                            100
-                        );
-
-                    }
-                );
-
-            }
-
-        }
-    );
-
-
-    // =========================================================
-    // PREVENT ACCIDENTAL DOUBLE SUBMISSION
-    // =========================================================
-
-    let navigationStarted = false;
-
-
-    window.addEventListener(
-        "beforeunload",
-        function () {
-
-            navigationStarted = true;
-
-        }
-    );
-
-
-    // =========================================================
-    // REPORT PAGE LOADED
-    // =========================================================
-
-    console.log(
-        "EvidenceGuard forensic report loaded successfully."
-    );
-
-</script>
-
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".img-box img").forEach(function (image) {
+                image.addEventListener("error", function () {
+                    const container = image.parentElement;
+                    image.style.display = "none";
+                    const msg = document.createElement("div");
+                    msg.style.padding = "30px 15px";
+                    msg.style.textAlign = "center";
+                    msg.style.color = "#98a2c3";
+                    msg.style.fontSize = "12px";
+                    msg.textContent = "Result visualization could not be loaded.";
+                    container.appendChild(msg);
+                });
+            });
+        });
+    </script>
 </body>
-
 </html>
