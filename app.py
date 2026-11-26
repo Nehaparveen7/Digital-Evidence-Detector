@@ -15,6 +15,7 @@ import json
 import traceback
 import io
 import gc
+import time
 
 import cv2
 import numpy as np
@@ -407,6 +408,8 @@ def generate_forensic_interpretation(scores, suspicious_index):
 # ============================================================
 
 import os
+import time    
+import shutil  
 import cv2
 import joblib
 import numpy as np
@@ -418,6 +421,23 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "forensic_rf_model.pkl")
 RF_MODEL = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
 
+def cleanup_old_files():
+    now = time.time()
+    for folder_name in ["uploads", "results"]:
+        folder_path = os.path.join(BASE_DIR, "static", folder_name)
+        if not os.path.exists(folder_path):
+            continue
+        for item in os.listdir(folder_path):
+            item_path = os.path.join(folder_path, item)
+            # Delete files or folders older than 5 minutes (300 seconds)
+            if (now - os.path.getmtime(item_path)) > 300:
+                try:
+                    if os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
+                    else:
+                        os.remove(item_path)
+                except Exception:
+                    pass
 
 def load_image_safe(filepath):
     try:
@@ -883,6 +903,15 @@ def compare_pdfs(orig_path, susp_path, result_folder=None):
         "total_text_changes": len(text_changes),
         "total_visual_regions": total_changed_regions
     }
+
+def delete_old_uploads():
+    folder = "/home/alquira/Digital-Evidence-Detector/static/uploads"
+    now = time.time()
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        # Delete any file older than 5 minutes (300 seconds)
+        if os.path.isfile(file_path) and (now - os.path.getmtime(file_path)) > 300:
+            os.remove(file_path)
 # ============================================================
 # FLASK APPLICATION ROUTES
 # ============================================================
@@ -894,6 +923,7 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
+    cleanup_old_files()
     try:
         files = request.files.getlist("images")
         if len(files) < 2:
@@ -1009,6 +1039,7 @@ def analyze():
 
 @app.route("/verify-single", methods=["POST"])
 def verify_single():
+    cleanup_old_files()
     try:
         file = request.files.get("single_image")
         if not file or not file.filename:
