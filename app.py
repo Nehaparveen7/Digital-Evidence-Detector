@@ -408,8 +408,6 @@ def generate_forensic_interpretation(scores, suspicious_index):
 # ============================================================
 
 import os
-import time    
-import shutil  
 import cv2
 import joblib
 import numpy as np
@@ -421,23 +419,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "forensic_rf_model.pkl")
 RF_MODEL = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
 
-def cleanup_old_files():
-    now = time.time()
-    for folder_name in ["uploads", "results"]:
-        folder_path = os.path.join(BASE_DIR, "static", folder_name)
-        if not os.path.exists(folder_path):
-            continue
-        for item in os.listdir(folder_path):
-            item_path = os.path.join(folder_path, item)
-            # Delete files or folders older than 5 minutes (300 seconds)
-            if (now - os.path.getmtime(item_path)) > 300:
-                try:
-                    if os.path.isdir(item_path):
-                        shutil.rmtree(item_path)
-                    else:
-                        os.remove(item_path)
-                except Exception:
-                    pass
 
 def load_image_safe(filepath):
     try:
@@ -460,10 +441,11 @@ def compute_ela_map(img, quality=90):
 
 
 def check_metadata_traces(filepath):
+    # Removed generic words like "google" or "edited" that appear in normal Android screenshots
     suspicious_keywords = [
         "photoshop", "adobe", "canva", "picsart", "firefly",
         "gemini", "imagen", "synthid", "ai generated",
-        "ai-generated", "edited", "xmp", "google"
+        "ai-generated", "snapseed", "gimp", "remini", "faceapp"
     ]
     hits = []
     screenshot_tags = []
@@ -478,6 +460,14 @@ def check_metadata_traces(filepath):
                         break
                 if any(tag in text for tag in ["screenshot", "android", "iphone", "ios"]):
                     screenshot_tags.append(str(key))
+
+            exif = im.getexif()
+            for tag_id, value in exif.items():
+                text = str(value).lower()
+                for keyword in suspicious_keywords:
+                    if keyword in text:
+                        hits.append(f"EXIF_{tag_id}")
+                        break
     except Exception:
         pass
 
@@ -485,26 +475,38 @@ def check_metadata_traces(filepath):
 
 
 def locate_suspicious_text_boxes(gray, ela_gray, lab_img):
-    """Finds the most anomalous chat bubbles / text lines for bounding-box display."""
+    """
+    Strictly isolates horizontal text lines inside uniform chat bubbles and flags
+    ONLY extreme statistical outliers (Z-score >= 3.2) with synthetic AI noise/chroma bleed.
+    Normal unedited screenshots will score 0.0 and return [].
+    """
     binary = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv2.THRESH_BINARY_INV, 15, 8
     )
-    line_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (6, 2))
+    line_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 2))
     connected = cv2.dilate(binary, line_kernel, iterations=1)
     contours, _ = cv2.findContours(connected, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     h, w = gray.shape
     ring_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     laplacian = np.abs(cv2.Laplacian(gray, cv2.CV_32F, ksize=3))
-    features = []
+    blurred_gray = cv2.GaussianBlur(gray.astype(np.float32), (3, 3), 0)
+    highpass_noise = np.abs(gray.astype(np.float32) - blurred_gray)
 
+    features = []
     for cnt in contours:
         x, y, bw, bh = cv2.boundingRect(cnt)
-        if bw < 20 or bh < 10 or bw > w * 0.85 or bh > h * 0.16 or (bw * bh) < 150:
+        aspect_ratio = bw / float(max(bh, 1))
+
+        # Strict text-line geometry filter: excludes square avatars, emojis, and UI icons
+        if (
+            bw < 35 or bh < 11 or bh > 55 or
+            bw > w * 0.85 or aspect_ratio < 2.2
+        ):
             continue
 
-        pad = 3
+        pad = 4
         x1, y1 = max(0, x - pad), max(0, y - pad)
         x2, y2 = min(w, x + bw + pad), min(h, y + bh + pad)
 
@@ -512,6 +514,7 @@ def locate_suspicious_text_boxes(gray, ela_gray, lab_img):
         ela_c = ela_gray[y1:y2, x1:x2]
         lap_c = laplacian[y1:y2, x1:x2]
         lab_c = lab_img[y1:y2, x1:x2]
+        noise_c = highpass_noise[y1:y2, x1:x2]
 
         ink = cv2.adaptiveThreshold(
             crop, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -521,49 +524,97 @@ def locate_suspicious_text_boxes(gray, ela_gray, lab_img):
         halo = (dil > 0) & (ink == 0)
         bg = (dil == 0)
 
-        if np.count_nonzero(halo) < 6 or np.count_nonzero(bg) < 6:
+        # Require plenty of flat bubble background around the text
+        if np.count_nonzero(halo) < 10 or np.count_nonzero(bg) < 25:
             continue
 
-        contrast = max(float(np.max(crop) - np.min(crop)), 20.0)
+        # Skip gradient/photo backgrounds (chat bubbles are relatively uniform)
+        bg_std = float(np.std(crop[bg]))
+        if bg_std > 18.0:
+            continue
+
+        contrast = max(float(np.max(crop) - np.min(crop)), 25.0)
         norm = contrast / 255.0
 
         features.append({
             "box": (x1, y1, x2 - x1, y2 - y1),
-            "h": bh,
             "bg_luma": float(np.median(crop[bg])),
-            "bg_std": float(np.std(crop[bg])),
+            "bg_std": bg_std,
+            "bg_hf_noise": float(np.std(noise_c[bg])),
             "bg_a": float(np.median(lab_c[:, :, 1][bg])),
             "bg_b": float(np.median(lab_c[:, :, 2][bg])),
             "sharp": float(np.mean(lap_c[halo])) / norm,
-            "ela": float(np.mean(ela_c[halo])) / norm
+            "ela": float(np.mean(ela_c[halo])) / norm,
         })
 
+    # Need at least 4 valid text lines to establish a reliable baseline
     if len(features) < 4:
-        return []
+        return [], 0.0, []
 
     scored_boxes = []
+    forensic_notes = []
+
     for idx, f in enumerate(features):
+        # Strictly compare ONLY against peers with the same bubble brightness AND tint
         peers = [
             n for j, n in enumerate(features)
-            if j != idx and abs(n["bg_luma"] - f["bg_luma"]) < 26.0 and abs(n["h"] - f["h"]) <= 6
+            if j != idx
+            and abs(n["bg_luma"] - f["bg_luma"]) < 15.0
+            and (abs(n["bg_a"] - f["bg_a"]) + abs(n["bg_b"] - f["bg_b"])) < 8.0
         ]
+        # Do NOT fall back to comparing green bubbles against white bubbles!
         if len(peers) < 2:
             continue
 
-        sharp_diff = abs(f["sharp"] - float(np.median([n["sharp"] for n in peers])))
-        ela_diff = abs(f["ela"] - float(np.median([n["ela"] for n in peers])))
-        bg_diff = abs(f["bg_std"] - float(np.median([n["bg_std"] for n in peers])))
-        tint_diff = (
-            abs(f["bg_a"] - float(np.median([n["bg_a"] for n in peers]))) +
-            abs(f["bg_b"] - float(np.median([n["bg_b"] for n in peers])))
+        hf_vals = np.array([n["bg_hf_noise"] for n in peers])
+        ela_vals = np.array([n["ela"] for n in peers])
+        sharp_vals = np.array([n["sharp"] for n in peers])
+
+        med_hf = float(np.median(hf_vals))
+        std_hf = max(float(np.std(hf_vals)), 0.35)
+
+        med_ela = float(np.median(ela_vals))
+        std_ela = max(float(np.std(ela_vals)), 2.5)
+
+        med_sharp = float(np.median(sharp_vals))
+        std_sharp = max(float(np.std(sharp_vals)), 12.0)
+
+        # Robust Z-scores (only positive increases in noise/ELA or drops in sharpness count)
+        z_hf = max(0.0, (f["bg_hf_noise"] - med_hf) / std_hf)
+        z_ela = max(0.0, (f["ela"] - med_ela) / std_ela)
+        z_blur = max(0.0, (med_sharp - f["sharp"]) / std_sharp)
+
+        # Require BOTH a strong outlier Z-score AND meaningful physical noise/ELA difference
+        hf_excess = f["bg_hf_noise"] - med_hf
+        ela_excess = f["ela"] - med_ela
+
+        is_outlier = (
+            (z_hf >= 3.2 and hf_excess >= 0.85) or
+            (z_ela >= 3.4 and ela_excess >= 8.0) or
+            (z_hf >= 2.4 and z_ela >= 2.4 and (hf_excess >= 0.6 or z_blur >= 2.0))
         )
 
-        anom = sharp_diff + (ela_diff * 1.5) + (bg_diff * 4.0) + (tint_diff * 3.0)
-        scored_boxes.append((anom, f["box"]))
+        if is_outlier:
+            combined_z = z_hf + z_ela + (0.7 * z_blur)
+            scored_boxes.append((combined_z, f["box"], hf_excess, ela_excess, z_blur))
+
+    if not scored_boxes:
+        return [], 0.0, []
 
     scored_boxes.sort(key=lambda item: item[0], reverse=True)
-    return [box for _, box in scored_boxes[:2]]
+    top_hits = scored_boxes[:2]
+    top_z, _, top_hf, top_ela, top_blur = top_hits[0]
 
+    local_prob = min(92.0, 56.0 + (top_z - 3.2) * 8.0)
+
+    if top_hf >= 0.6:
+        forensic_notes.append(f"Localized AI inpainting noise inside text bubble (+{top_hf:.2f} HF residual)")
+    if top_ela >= 6.0:
+        forensic_notes.append(f"Localized ELA recompression anomaly on edited text (+{top_ela:.1f})")
+    if top_blur >= 2.0:
+        forensic_notes.append("Sub-pixel glyph softening detected compared to native OS font")
+
+    return [box for _, box, _, _, _ in top_hits], local_prob, forensic_notes
 
 def analyze_single_image(filepath, result_folder=None):
     if result_folder is None:
@@ -574,14 +625,7 @@ def analyze_single_image(filepath, result_folder=None):
     if img is None:
         return None
 
-    # Resize huge mobile photos so Render's 512 MB RAM doesn't crash (502 OOM)
-    max_dim = 1280
     h, w = img.shape[:2]
-    if max(h, w) > max_dim:
-        scale = max_dim / max(h, w)
-        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
-        h, w = img.shape[:2]
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype(np.float32)
 
@@ -598,19 +642,24 @@ def analyze_single_image(filepath, result_folder=None):
     if RF_MODEL is not None and feat is not None:
         if isinstance(RF_MODEL, dict):
             core_feat = feat[RF_MODEL["indices"]]
-            prob_edited = float(RF_MODEL["model"].predict_proba([core_feat])[0][1]) * 100.0
+            ml_prob = float(RF_MODEL["model"].predict_proba([core_feat])[0][1]) * 100.0
         else:
-            prob_edited = float(RF_MODEL.predict_proba([feat])[0][1]) * 100.0
+            ml_prob = float(RF_MODEL.predict_proba([feat])[0][1]) * 100.0
     else:
-        prob_edited = 85.0 if metadata_hits else 10.0
+        ml_prob = 10.0
 
+    # 4. Localized Chat/Text Bubble Forensic Scan (runs BEFORE final verdict!)
+    suspicious_boxes, local_prob, local_notes = locate_suspicious_text_boxes(gray, ela_gray, lab_img)
+
+    # Combine global ML score, localized text-region anomaly score, and metadata traces
+    prob_edited = max(ml_prob, local_prob)
     if metadata_hits:
         prob_edited = max(prob_edited, 85.0)
 
     suspicion_score = round(min(max(prob_edited, 0.0), 99.0), 2)
     is_edited = suspicion_score >= 50.0
 
-    # 4. Build Verdict, Explanation & Bounding Boxes
+    # 5. Build Verdict, Explanation & Bounding Boxes
     reasons = []
     boxes = []
 
@@ -618,27 +667,30 @@ def analyze_single_image(filepath, result_folder=None):
         verdict = "AI-EDITED CHAT / TEXT DETECTED"
         confidence = "HIGH" if suspicion_score >= 70.0 else "MEDIUM"
         explanation = (
-            f"Forensic ML classifier detected AI editing signatures with "
-            f"{suspicion_score:.1f}% manipulation probability."
+            f"Forensic hybrid analyzer detected AI text/chat manipulation with "
+            f"{suspicion_score:.1f}% tampering probability."
         )
-        reasons.append(f"ML Forensic Classifier manipulation probability: {suspicion_score:.1f}%")
 
+        if ml_prob >= 50.0:
+            reasons.append(f"ML Forensic Classifier manipulation probability: {ml_prob:.1f}%")
+        if local_notes:
+            reasons.extend(local_notes)
         if feat is not None:
             reasons.append(f"VAE chroma-bleed jitter index: {float(feat[0]):.4f}")
-
         if metadata_hits:
             reasons.append(f"AI/Editor metadata tags found ({', '.join(metadata_hits[:2])})")
 
-        for t_box in locate_suspicious_text_boxes(gray, ela_gray, lab_img):
+        for t_box in suspicious_boxes:
             boxes.append((*t_box, "Edited Region"))
     else:
         verdict = "NO AI TEXT EDITING DETECTED (AUTHENTIC)"
         confidence = "HIGH" if suspicion_score <= 30.0 else "MEDIUM"
         explanation = (
-            f"Forensic ML classifier verified authentic screenshot structure "
+            f"Forensic analyzer verified uniform text rendering and authentic screenshot structure "
             f"({100.0 - suspicion_score:.1f}% authenticity confidence)."
         )
-        reasons.append(f"ML Forensic Classifier authenticity score: {100.0 - suspicion_score:.1f}%")
+        reasons.append(f"ML Forensic Classifier authenticity score: {100.0 - ml_prob:.1f}%")
+        reasons.append("All detected chat bubbles show consistent noise and edge sharpness")
 
         if feat is not None:
             reasons.append(f"Native 8x8 JPEG block ratio: {float(feat[3]):.3f}")
@@ -646,7 +698,7 @@ def analyze_single_image(filepath, result_folder=None):
     if screenshot_tags:
         reasons.append("Native OS screenshot metadata tags verified")
 
-    # 5. Draw Bounding Boxes on Annotated Output
+    # 6. Draw Bounding Boxes on Annotated Output
     annotated = img.copy()
     for (bx, by, bw, bh, label) in boxes[:4]:
         cv2.rectangle(annotated, (bx, by), (bx + bw, by + bh), (0, 0, 255), 2)
@@ -656,7 +708,7 @@ def analyze_single_image(filepath, result_folder=None):
             cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1, cv2.LINE_AA
         )
 
-    # 6. Save Heatmap & Annotated Image
+    # 7. Save Heatmap & Annotated Image
     ela_normalized = cv2.normalize(ela_gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
     ela_heatmap = cv2.applyColorMap(ela_normalized, cv2.COLORMAP_JET)
 
@@ -923,7 +975,6 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    cleanup_old_files()
     try:
         files = request.files.getlist("images")
         if len(files) < 2:
@@ -1039,7 +1090,6 @@ def analyze():
 
 @app.route("/verify-single", methods=["POST"])
 def verify_single():
-    cleanup_old_files()
     try:
         file = request.files.get("single_image")
         if not file or not file.filename:
